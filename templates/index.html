@@ -1,0 +1,18 @@
+<!-- Frontend -->
+<html>
+
+<body style="font-family: Arial; max-width: 600px; margin: 50px auto;">
+    <h2>URL Metadata Crawler</h2>
+
+    <input type="text" id="url" placeholder="Enter URL" style="width: 70%; padding: 8px;">
+
+    <button id="crawlBtn" onclick="crawl()" style="padding: 8px 16px;">Crawl</button>
+
+    <pre id="result" style="background: #f4f4f4; padding: 15px; margin-top: 20px; white-space: pre-wrap;"></pre>
+
+    <button id="download" onclick="downloadFile()" style="display:none; padding: 8px 16px;">Download TXT</button>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

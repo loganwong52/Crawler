@@ -1,34 +1,22 @@
-from flask import Flask, request, jsonify
-import requests, re
-from bs4 import BeautifulSoup
+from flask import Flask, request, jsonify, render_template
+from crawler import crawl as do_crawl
+
 
 app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/crawl')
 def crawl():
     url = request.args.get('url')
     if not url:
         return jsonify({"error": "No URL provided"}), 400
-
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; MetaCrawler/1.0)"}
-    resp = requests.get(url, headers=headers, timeout=10)
-    resp.raise_for_status()
-    soup = BeautifulSoup(resp.text, "html.parser")
-
-    title = soup.title.string.strip() if soup.title else None
-    desc_tag = soup.find("meta", attrs={"name": "description"})
-    description = desc_tag["content"].strip() if desc_tag and desc_tag.get("content") else None
-
-    for tag in soup(["script", "style", "meta", "noscript"]):
-        tag.decompose()
-    body_text = re.sub(r'\s+', ' ', soup.get_text()).strip()[:2000]
-
-    return jsonify({
-        "url": url,
-        "title": title,
-        "description": description,
-        "body": body_text
-    })
+    try:
+        return jsonify(do_crawl(url))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=8080)

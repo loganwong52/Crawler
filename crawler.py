@@ -9,6 +9,7 @@ import re
 import json
 from bs4 import BeautifulSoup
 from collections import Counter
+import traceback
 
 STOP_WORDS = {"the","a","an","and","or","but","in","on","at","to","for","of","with","by","from","up","about","is","are","was","were","be","been","being","have","has","had","do","does","did","will","would","shall","should","can","could","may","might","must","i","you","he","she","it","we","they","me","him","her","us","them","my","your","his","its","our","their","this","that","these","those","am","no","not","all","as","if","more","than","very","just","so","some","such","only","also","&"}
 
@@ -45,22 +46,42 @@ def crawl(url):
     # create object to tell Chrome how to behave
     options = Options()
     # run w/o showing a browser window
-    options.add_argument("--headless")
+    options.add_argument("--headless=new")
     # disable Chrome's security sandbox
     options.add_argument("--no-sandbox")
     # tell Chrome to use temporary folders, don't crash in Linux environment
     options.add_argument("--disable-dev-shm-usage")
+    # disable GPU
+    options.add_argument("--disable-gpu")  
+    # disable chrome extentions from loading
+    options.add_argument("--disable-extensions")
+    # disable setuid sandbox
+    options.add_argument("--disable-setuid-sandbox")
+    
+
     # tell website what browser and OS to pretend to be
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
     
     # download the right ChromeDriver, wrap it in Selenium, and lanuch the browser to remote control it
+    print("creating driver", flush=True)
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    # go to the URL
-    driver.get(url)
-    
+    print("Driver created", flush=True)
+    try:
+        # go to the URL
+        print(f"Loading {url}", flush=True)
+        driver.get(url)
+        print("URL Loaded", flush=True)
+    except Exception:
+        traceback.print_exc()
+        raise
+
     # GRAB the page HTML & close it
-    soup = BeautifulSoup(driver.page_source, "html.parser")
+    html = driver.page_source
+    print("Got page source", flush=True)
+    soup = BeautifulSoup(html, "html.parser")
+    print("Soup", flush=True)
     driver.quit()
+    print("Driver quit", flush=True)
 
 
     # title: HTML title tag inside <head>
