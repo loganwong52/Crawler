@@ -1,0 +1,5 @@
+AI Tools I used
+
+I used DeepSeek and ChatGPT to help me understand the Part 1 and generate code for app.py, crawler.py, script.js, and index.html.
+
+I used ClaudeAI and DeepSeek to help me answer Parts 2 and 3. I used them to clarify my understanding of the instructions and bounce ideas off of them. I rephrased their suggestions in my own words.

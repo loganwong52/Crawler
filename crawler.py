@@ -10,6 +10,8 @@ import json
 from bs4 import BeautifulSoup
 from collections import Counter
 import traceback
+from urllib.parse import urlparse
+
 
 STOP_WORDS = {"the","a","an","and","or","but","in","on","at","to","for","of","with","by","from","up","about","is","are","was","were","be","been","being","have","has","had","do","does","did","will","would","shall","should","can","could","may","might","must","i","you","he","she","it","we","they","me","him","her","us","them","my","your","his","its","our","their","this","that","these","those","am","no","not","all","as","if","more","than","very","just","so","some","such","only","also","&"}
 
@@ -116,8 +118,17 @@ def crawl(url):
         keywords = topics
     # if keywords do exist, they may or may not match topics, so I'll keep both
 
+    # Isolate website name between www. and .com
+    domain = urlparse(url).netloc
+    parts = domain.split(".")
+    if len(parts) >= 2:
+        website_name = parts[-2] 
+    else:
+        website_name = domain
+
     return {
         "url": url,
+        "website": website_name,
         "title": title,
         "description": description,
         "keywords": keywords,
