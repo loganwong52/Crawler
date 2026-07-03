@@ -1,6 +1,4 @@
 # PART 2
-Logan wong
-
 <!-- Provide design documentation to operationalize the collection of billions of URLs using the code
 developed. 
 Propose the next steps
@@ -26,9 +24,9 @@ List of billions of URLs as a text file and/or in MySQL for a given year/month
 
 
 ## Optimizing Scale
-To deal with billions of URLs, it would be best to not go through a frontend UI. Morever, instead of using a for loop to go through each URL, it would be better to use parallel processing via multiple threads, especially since there is no sequential aspect to this task. 
+To deal with billions of URLs, it would be best to not go through a frontend UI. Moreover, instead of using a for loop to go through each URL, it would be better to use parallel processing via multiple threads, especially since there is no sequential aspect to this task. 
 
-Each URL is independent of the others. Multiple threads can be run on a cloud virtual machine. Furthermore,  multiple threads can be run on a virtual machine. I would run hundereds of threads on hundreds of cloud virtual machines so they can run for however long is necessary and not rely on a local machine. 
+Each URL is independent of the others. Multiple threads can be run on a cloud virtual machine. Furthermore,  multiple threads can be run on a virtual machine. I would run hundreds of threads on hundreds of cloud virtual machines so they can run for however long is necessary and not rely on a local machine. 
 
 1. A coordinator reads URLs from files/MySQL
 2. The coordinator adds the URL to a queue
@@ -59,13 +57,15 @@ $$Cost = H_{total} \times c$$
 
 I'm assuming there's a set budget and that the total cost will be less than the total budget, $$Cost \le B$$ 
 
+Moreover, whatever cost it comes out to, we will also need to keep in mind that we will need to use some of the budget on preliminary testing before doing the actual, final pass through all the URLs.
+
 If the cost is too high, we'll have to find a cheaper virtual machine.
 
 Of course, virtual machines aren't necessary, since threads can be run locally on computers.
 
 It's important to note that parllelism only reduces time, not cost. So as far as I can tell, there isn't a way to reduce costs by increasing parallelism. Costs can be reduced if we use virtual machines with the lowest hourly rates.
 
-It's more likely that there is a dadline for when the data needs to be processed. So there should be a given target completion time, $H_{target}$, rather than a target number of virtual machines to use.
+It's more likely that there is a deadline for when the data needs to be processed. So there should be a given target completion time, $H_{target}$, rather than a target number of virtual machines to use.
 
 So to find how many virtual machines are necessary:
 $$M = \frac{H_{total}}{H_{target}} = \frac{N \times t}{3600 \times H_{target}}$$
@@ -86,11 +86,11 @@ N and k are both known constants, and as M and k increase, H_{target} approaches
 
 
 ## Optimizing Performance
-If multiple bots from the same IP address visit the same website too often in quick succession, all the bots might be detected and blocked. To avoid this, each thread will have a shared history of websites they've visted. A thread gets a URL from the list, it checks if it's allowed to visit or not. Basically this creates a cool-down period for visiting a website. If the website was visited recently, the thread will put that URL back in the list and get another one.
+If multiple bots from the same IP address visit the same website too often in quick succession, all the bots might be detected and blocked. To avoid this, each thread will have a shared history of websites they've visited. A thread gets a URL from the list, it checks if it's allowed to visit or not. Basically this creates a cool-down period for visiting a website. If the website was visited recently, the thread will put that URL back in the list and get another one.
 
 Throughput is how many URLs can be visited per hour. To maximize this value, increase M and k to their max, while decreasing t, the time it takes to extract metadata from the URL, to a minimum. M and k might be limited by the platform that offers virtual machines. 
 
-t depends on internet speed, target server latency, and local parsing efficiency. Internt speed can be increased by having good wifi. Target server latency is how long the website's server takes to respond to a request. There might not be much one can do easily regarding this. Local parsing efficiency is how long the code takes to extract metadata. Parsing efficiency can depend on the library method used to read HTML because some HTML parsers are fasters than others. It also depends on what metadata is being extracted. While it's easy to extract the \<head\> and \<title\>, it will take longer to parse the entire \<body\>.
+t depends on internet speed, target server latency, and local parsing efficiency. Internet speed can be increased by having good wifi. Target server latency is how long the website's server takes to respond to a request. There might not be much one can do easily regarding this. Local parsing efficiency is how long the code takes to extract metadata. Parsing efficiency can depend on the library method used to read HTML because some HTML parsers are faster than others. It also depends on what metadata is being extracted. While it's easy to extract the `<head>` and `<title>`, it will take longer to parse the entire `<body>`.
 
 ## Optimizing Reliability
 I would optimize reliability by choosing the virtual machine platform that has the best user reviews while remaining under budget. 
@@ -99,7 +99,7 @@ Silent data loss, or silent failure, would be bad too. So if threads fail, I'd m
 
 Also, if metadata has no useful information (such as the JSON being full of null values), then the thread should set it aside for manual human inspection later and debugging.
 
-Lastly, to store metadata, one might consider using a PostgreSQL database. However, to handle billions of metadata, a data lake would be better. It can store raw files, rather than needing to format things into columns. Moreover, multiple metadata can be stored in 1 file, known as Parquet files. So billions of URLs doesn't become billions of metadata files, but only thounsands of files. Once stored, they can be queried with a separate query tool.
+Lastly, to store metadata, one might consider using a PostgreSQL database. However, to handle billions of metadata, a data lake would be better. It can store raw files, rather than needing to format things into columns. Moreover, multiple metadata can be stored in 1 file, known as Parquet files. So billions of URLs doesn't become billions of metadata files, but only thousands of files. Once stored, they can be queried with a separate query tool.
 
 
 ## Output: 
@@ -108,7 +108,7 @@ Lastly, to store metadata, one might consider using a PostgreSQL database. Howev
 Billions of JSON metadata can be stored in thousands of Parquet files in a data lake and queried by a separate query tool, such as Apache Spark, DuckDB, Trino, or Amazon Athena.
 
 ### Unified Data Schema
-The extracted metadata is the original URL, website name, page title, description, keywords, author, topics, Open Graph title, Open Graph description, Open Graph image, and the page body. Website name is the the domain name between www. and .com, .org, .net, etc. Title is the HTML title tag inside \<head\>.  Description is inside \<meta name="description" content="..."\> inside \<head\>. Keywords are the meta keywords. Topics is my own generated keywords extracted from the totality of title + description + body if keywords is None. Even if keywords do exist, they may or may not match topics, so I've included both. Author is inside \<meta name="author" content="..."\>. Open Graph title, description, and image are extracted from the respective Open Graph tags.
+The extracted metadata is the original URL, website name, page title, description, keywords, author, topics, Open Graph title, Open Graph description, Open Graph image, and the page body. Website name is the the domain name between www. and .com, .org, .net, etc. Title is the HTML title tag inside `<head>`.  Description is inside `<meta name="description" content="...">` inside `<head>`. Keywords are the meta keywords. Topics is my own generated keywords extracted from the totality of title + description + body if keywords is None. Even if keywords do exist, they may or may not match topics, so I've included both. Author is inside `<meta name="author" content="...">`. Open Graph title, description, and image are extracted from the respective Open Graph tags.
 
 ### SLOs and SLAs
 <!-- SLO (Service Level Objective): A target you set internally for a metric. -->
@@ -138,7 +138,7 @@ Queue backlog measures how many URLs remain to be processed, and its slope shows
 ### Tools to track system progress
 Common tools to track system progress are Prometheus, Grafana, ELK, and PagerDuty. These are open-source DevOps tools used to monitor system performance. Monitored data includes performance metrics like system health, analyze logs, and  incident responses.
 
-Prometheus is a way to monitor a system. It collects and stores data over a period of time. Grafana is a dashboard that shows the performance of something over a period of time, namely, the data collected by Prometheus. ELK is used to analyze system logs. E stands for elasticsearch, which is a search engine that stores tons of unstructred text data with instant search time. L stands for logstash, which is a pipeline to collect logs from various apps, process them, and send them to elasticsearch. K stands for kibana, which is a UI that lets users search, filter, and visualize log data. PagerDuty is a cloud-based incident response platform that uses AI to alert people that there's a problem.
+Prometheus is a way to monitor a system. It collects and stores data over a period of time. Grafana is a dashboard that shows the performance of something over a period of time, namely, the data collected by Prometheus. ELK is used to analyze system logs. E stands for elasticsearch, which is a search engine that stores tons of unstructured text data with instant search time. L stands for logstash, which is a pipeline to collect logs from various apps, process them, and send them to elasticsearch. K stands for kibana, which is a UI that lets users search, filter, and visualize log data. PagerDuty is a cloud-based incident response platform that uses AI to alert people that there's a problem.
 
 Basically, the crawler would extract data from billions of URLs and Prometheus gets metrics for the crawler like URLs visited per hour, CPU usage, memory usage, and HTTP error rate. Grafana would display this data in a graph. ELK would store logs, which include error messages, and PagerDuty would alert humans if there is a problem, such as if the crawler stops processing URLs, or if the error rate exceeds a certain threshold.
 
